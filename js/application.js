@@ -1,40 +1,59 @@
-const adres = "https://a410.bitrix24.ru/rest/1/xg6jilmx8dvece1f/",
-      x = new XMLHttpRequest();
+window.onload = function()  {
+  if(localStorage.getItem('login')) {
+    login.value = localStorage.getItem('login');
+    app.getDeliveryList(localStorage.getItem('id'));
+    switch(sessionStorage.getItem('part')) {
+      case 'deliveryMap':
+        app.openPart('deliveryMap');
+        break;
+      case 'deliveryFinish':
+        app.openPart('deliveryFinish');
+        break;
+      default:
+        console.log("Данные обновлены");
+    }
+  }
 
-window.onload = function() {
-  const elMenu = menu.querySelectorAll('a');
-  for(i=0; i<elMenu.length; i++) {
-    elMenu[i].onclick = onClickElMenu;
+  const elMenu = menu.querySelectorAll('a'),
+        numElMenu = elMenu.length;
+  for(i=0; i<numElMenu; i++) {
+    elMenu[i].onclick = app.onClickElMenu;
   }
 
   enter.onclick = function() {
     if(!login.value || !pass.value) alert("Жизнь прекрасна, но надо иногда и поля заполнять!")
-    else  checkLogPass(login.value, pass.value);
+    else  app.checkLogPass(login.value, pass.value);
   }
-  document.querySelector('#header div').addEventListener('click', toggleMainBlocks);
+  document.querySelector('#header div').addEventListener('click', app.toggleMainBlocks);
 
   exit.onclick = function() {
     login.value = "";
     pass.value = "";
-    clearAll();
+    app.clearAll();
     localStorage.clear();
   }
 }
 
-function toggleMainBlocks() {
+function Application() {
+  this.adres = "https://a410.bitrix24.ru/rest/1/xg6jilmx8dvece1f/",
+  this.xhr = new XMLHttpRequest();
+}
+
+Application.prototype.toggleMainBlocks = function() {
   generalInf.classList.toggle('hidden');
   setting.classList.toggle('hidden');
 }
 
-function checkLogPass(login, pass) {
-  x.open("GET", adres+"lists.element.get.json?IBLOCK_TYPE_ID=lists_socnet&IBLOCK_ID=73&FILTER[PROPERTY_453]="+login, true);
-  x.onload = function()	{
-    const responseObj = JSON.parse(x.response).result;
-    if(x.status == 200)	{
+Application.prototype.checkLogPass = function(login, pass) {
+  const xhr = this.xhr;
+  xhr.open("GET", this.adres+"lists.element.get.json?IBLOCK_TYPE_ID=lists_socnet&IBLOCK_ID=73&FILTER[PROPERTY_453]="+login, true);
+  xhr.onload = function()	{
+    const responseObj = JSON.parse(xhr.response).result;
+    if(xhr.status == 200)	{
       if(responseObj.length > 0) {
         for(let i in responseObj[0].PROPERTY_449) {
           if(responseObj[0].PROPERTY_449[i] === pass) {
-            getDeliveryList(responseObj[0].ID);
+            app.getDeliveryList(responseObj[0].ID);
             localStorage.setItem('login', login);
             localStorage.setItem('pass', pass);
             localStorage.setItem('id', responseObj[0].ID);
@@ -44,35 +63,36 @@ function checkLogPass(login, pass) {
       }else return alert('Перелогинься, я тебя не знаю!');
     }else return alert('Сервер временно не доступен. Попробуйте повторить запрос чуть позже');
   }
-  x.send(null);
+  xhr.send(null);
 }
 
-function getDeliveryList(id) { // Загрузка списка заказов
-  toggleMainBlocks();
-  x.open("GET", adres+"crm.deal.list.json?ORDER[ID]=DESC&FILTER[UF_CRM_1624521910]="+id, true);
-  x.onload = function()	{
-    const responseObj = JSON.parse(x.response).result;
+Application.prototype.getDeliveryList = function(id) { // Загрузка списка заказов
+  const xhr = this.xhr;
+  app.toggleMainBlocks();
+  xhr.open("GET", this.adres+"crm.deal.list.json?ORDER[ID]=DESC&FILTER[UF_CRM_1624521910]="+id, true);
+  xhr.onload = function()	{
+    const responseObj = JSON.parse(xhr.response).result;
           noDelObj = [];
-    clearAll();
+    app.clearAll();
     responseObj.forEach(function(obj) {
       switch(obj.STAGE_ID) {
         case "C1:PREPARATION":
-          addToDeliveryList(obj);
+          app.addToDeliveryList(obj);
           break;
         case "C1:WON":
         case "C1:FINAL_INVOICE":
-          addToDeliveryClose(obj);
+          app.addToDeliveryClose(obj);
           break;
         default:
           noDelObj.push(obj);
       }
     });
-    addListenerEndDelivery();
+    app.addListenerEndDelivery();
   }
-  x.send(null);
+  xhr.send(null);
 }
 
-function addToDeliveryList(obj) {
+Application.prototype.addToDeliveryList = function(obj) {
   const info = obj.SOURCE_DESCRIPTION.split("|"),
         newItem = document.createElement('tr');
   newItem.innerHTML = '<td><table class="target"><tr><th></th><th>'+obj.TITLE+'</th><th></th></tr>'+
@@ -89,7 +109,7 @@ function addToDeliveryList(obj) {
   document.querySelector('#deliveryList tbody').append(newItem);
 }
 
-function addToDeliveryClose(obj) {
+Application.prototype.addToDeliveryClose = function(obj) {
   const info = obj.SOURCE_DESCRIPTION.split("|"),
         newItem = document.createElement('tr');
   newItem.className = "close_dlvr";
@@ -103,12 +123,12 @@ function addToDeliveryClose(obj) {
   document.querySelector('#deliveryFinish tbody').append(newItem);
 }
 
-function onClickElMenu(elt) {
+Application.prototype.onClickElMenu = function(elt) {
   const name = elt.path[0].name;
-  openPart(name);
+  app.openPart(name);
 }
 
-function openPart(name) {
+Application.prototype.openPart = function(name) {
   sessionStorage.setItem('part', name);
   document.querySelectorAll('#generalInf div').forEach((element) => element.classList.add('hidden'));
   setting.classList.add('hidden');
@@ -116,14 +136,14 @@ function openPart(name) {
   document.getElementById(name).classList.remove('hidden');
 }
 
-function addListenerEndDelivery()  { // Подключаем обработчики выведенной информации
+Application.prototype.addListenerEndDelivery = function()  { // Подключаем обработчики выведенной информации
   const eltDelivery = document.querySelectorAll('.endDelivery');
   for(let i=0; i<eltDelivery.length; i++) {
-    eltDelivery[i].onclick = endDelivery(eltDelivery[i]);
+    eltDelivery[i].onclick = app.endDelivery(eltDelivery[i]);
   }
 }
 
-function endDelivery(elem)  {
+Application.prototype.endDelivery = function(elem)  {
   const name = elem.parentNode.getAttribute('val'),
         target = document.querySelector('.raport[name="'+name+'"]');
   elem.querySelector('a').onclick = function() {
@@ -131,11 +151,11 @@ function endDelivery(elem)  {
     elem.querySelector('img').classList.remove('hidden');
     target.classList.remove('hidden');
     target.querySelector('textarea').focus();
-    addListenerDeliveryClose(target, elem.getAttribute('name'));
+    app.addListenerDeliveryClose(target, elem.getAttribute('name'));
   }
 }
 
-function addListenerDeliveryClose(target, res) {
+Application.prototype.addListenerDeliveryClose = function(target, res) {
   target.querySelectorAll('button').forEach(function(elt) {
     elt.addEventListener('click', function() {
       target.parentNode.querySelectorAll('.endDelivery img').forEach((el) => el.classList.remove('hidden'));
@@ -150,28 +170,32 @@ function addListenerDeliveryClose(target, res) {
   });
 }
 
-function pushRaport(trgt, res) { // Отправка данных на портал
-  const id = (res === "yes")  ? "C1:WON"  : "C1:FINAL_INVOICE";
+Application.prototype.pushRaport = function(trgt, res) { // Отправка данных на портал
+  const id = (res === "yes")  ? "C1:WON"  : "C1:FINAL_INVOICE",
+        xhr = this.xhr;
   trgt.parentNode.parentNode.classList.add('hidden');
-  x.open("POST", adres+"crm.deal.update.json?ID="+trgt.getAttribute('name')+"&FIELDS[STAGE_ID]="+id, true);
-  x.onload = function()	{
-    sellComment(trgt);
+  xhr.open("POST", this.adres+"crm.deal.update.json?ID="+trgt.getAttribute('name')+"&FIELDS[STAGE_ID]="+id, true);
+  xhr.onload = function()	{
+    app.sellComment(trgt);
     return alert("Миссия завершена!");
   }
-  x.send(null);
+  xhr.send(null);
 }
 
-function sellComment(trgt) {
-  x.open("POST", adres+"crm.timeline.comment.add.json?FIELDS[ENTITY_ID]="+trgt.getAttribute('name')+
+Application.prototype.sellComment = function(trgt) {
+  const xhr = this.xhr;
+  xhr.open("POST", this.adres+"crm.timeline.comment.add.json?FIELDS[ENTITY_ID]="+trgt.getAttribute('name')+
     "&FIELDS[ENTITY_TYPE]=DEAL&FIELDS[COMMENT]="+trgt.querySelector('textarea').value, true);
-  x.onload = function()	{
+  xhr.onload = function()	{
   }
-  x.send(null);
+  xhr.send(null);
 }
 
-function clearAll() {
+Application.prototype.clearAll = function() {
   document.querySelector('#deliveryList tbody').innerHTML = "";
   document.querySelector('#deliveryFinish tbody').innerHTML = "";
   exit.classList.toggle('hidden');
   enter.classList.toggle('hidden');
 }
+
+const app = new Application();

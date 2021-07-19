@@ -66,24 +66,5 @@
       <a href="#"><img src="pic/house.svg" alt=""></a>
     </div>
   </div>
-  
-  <script>
-    (function() {
-      if(localStorage.getItem('login')) {
-        login.value = localStorage.getItem('login');
-        getDeliveryList(localStorage.getItem('id'));
-        switch(sessionStorage.getItem('part')) {
-          case 'deliveryMap':
-            openPart('deliveryMap');
-            break;
-          case 'deliveryFinish':
-            openPart('deliveryFinish');
-            break;
-          default:
-            console.log("Данные обновлены");
-        }
-      }
-    }());
-  </script>
 </body>
 </html>
