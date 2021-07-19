@@ -1,0 +1,126 @@
+body {
+	text-align: center;
+}
+table {
+	width: 100%;
+	border-spacing: 0;
+}
+th {
+	background-color: rgba(254, 240, 255, 0.993);
+}
+textarea	{
+	height: 60px;
+}
+
+.hidden {
+	display: none;
+}
+.cantry_code	{
+	margin-left: -20px;
+	font-size: 18px;
+}
+.endDelivery {
+	width: 48px;
+}
+
+#app	{
+	padding: 70px 0 100px 0;
+	overflow:auto;
+}
+#setting {
+	margin-top: 30%;
+}
+#setting input {
+	width: 60%;
+	margin: 10px 0;
+	height: 40px;
+	border-radius: 20px;
+	padding-left: 20px;
+}
+#setting button {
+	margin: 50px 10px;
+	width: 100px;
+	height: 40px;
+	font-size: large;
+}
+#generalInf {
+	height: 65%;
+}
+
+#deliveryList td img	{
+	width: 48px;
+}
+#deliveryList textarea	{
+	width: 100%;
+}
+#deliveryList button	{
+	width: 45%;
+	margin: 5px;
+	height: 30px;
+}
+
+#header	{
+	position: fixed;
+  top: 0;
+	left: 0;
+	width: 100%;
+	display: inline-block;
+  box-sizing: border-box;
+	background-color: plum;
+}
+#header	div	{
+	position: fixed;
+  top: 0;
+	right: 0;
+}
+#header img	{
+	width: 64px;
+}
+
+#menu {
+  position: fixed;
+  bottom: 0;
+	width: 100%;
+	left: 0;
+}
+nav {
+	 background-color: #fff;
+	 background-color: plum;
+}
+/* убираем отступы и поля, а также list-style для "ul", 
+* и добавляем "position:relative" */
+nav ul {
+	padding: 0;
+	margin:0;
+	list-style: none;
+	position: relative;
+}
+/* применяем inline-block позиционирование к элементам навигации */
+nav ul li {
+	margin: 0px -7px 0 0;
+	padding-top: 10px;
+	display:inline-block;
+	width: 33%;
+	position: relative;
+	cursor: pointer;
+}
+/* стилизуем ссылки */
+nav a {
+	 display:block;
+	 padding:0 10px;
+	 color:#a8a8a8;
+	 font-size:20px;
+	 line-height: 60px;
+	 text-decoration:none;
+	 position: relative;
+}
+/* изменяем цвет фона при наведении курсора */
+nav a:hover {
+	 text-decoration:none;
+	 position: relative;
+}
+
+nav a img	{
+	width: 64px;
+}
+
