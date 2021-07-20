@@ -1,6 +1,6 @@
 window.onload = function()  {
-  if(localStorage.getItem('login')) {
-    login.value = localStorage.getItem('login');
+  if(localStorage.getItem('phone')) {
+    phone.value = localStorage.getItem('phone');
     app.getDeliveryList(localStorage.getItem('id'));
     switch(sessionStorage.getItem('part')) {
       case 'deliveryMap':
@@ -21,17 +21,19 @@ window.onload = function()  {
   }
 
   enter.onclick = function() {
-    if(!login.value || !pass.value) alert("Жизнь прекрасна, но надо иногда и поля заполнять!")
-    else  app.checkLogPass(login.value, pass.value);
+    if(!phone.value || !lastname.value || !firstname.value) alert("Для входа необходимо заполнить все поля!")
+    else  app.checkLogPass(phone.value, lastname.value, firstname.value);
   }
-  document.querySelector('#header div').addEventListener('click', app.toggleMainBlocks);
 
   exit.onclick = function() {
-    login.value = "";
-    pass.value = "";
+    phone.value = "";
+    lastname.value = "";
+    firstname.value = "";
     app.clearAll();
     localStorage.clear();
   }
+  
+  document.querySelector('#header div').addEventListener('click', app.toggleMainBlocks);
 }
 
 function Application() {
@@ -44,50 +46,66 @@ Application.prototype.toggleMainBlocks = function() {
   setting.classList.toggle('hidden');
 }
 
-Application.prototype.checkLogPass = function(login, pass) {
+Application.prototype.checkLogPass = function(phone, lastname, firstname) {
   const xhr = this.xhr;
-  xhr.open("GET", this.adres+"lists.element.get.json?IBLOCK_TYPE_ID=lists_socnet&IBLOCK_ID=73&FILTER[PROPERTY_453]="+login, true);
+  xhr.open("GET", this.adres+"user.search.json?FILTER[NAME]="+firstname+"&FILTER[LAST_NAME]="+lastname, true);
   xhr.onload = function()	{
     const responseObj = JSON.parse(xhr.response).result;
     if(xhr.status == 200)	{
       if(responseObj.length > 0) {
-        for(let i in responseObj[0].PROPERTY_449) {
-          if(responseObj[0].PROPERTY_449[i] === pass) {
-            app.getDeliveryList(responseObj[0].ID);
-            localStorage.setItem('login', login);
-            localStorage.setItem('pass', pass);
-            localStorage.setItem('id', responseObj[0].ID);
-          }
-          else return alert('Есть в базе такой номер, осталось подобрать пароль))');
+        console.log(responseObj[0].WORK_PHONE, '7'+phone);
+        if(responseObj[0].ACTIVE === true && responseObj[0].WORK_PHONE.replace(/[^\d]/g,'') === ('7'+phone)) {
+          app.getDeliveryList(responseObj[0].ID);
+          localStorage.setItem('phone', phone);
+          localStorage.setItem('id', responseObj[0].ID);
         }
+        else return alert('Есть в базе такой номер, осталось вспомнить фамилию пользователя');
       }else return alert('Перелогинься, я тебя не знаю!');
-    }else return alert('Сервер временно не доступен. Попробуйте повторить запрос чуть позже');
+    }else return alert('Сервер временно не доступен. Попробуйте повторить запрос позже');
   }
   xhr.send(null);
 }
 
 Application.prototype.getDeliveryList = function(id) { // Загрузка списка заказов
   const xhr = this.xhr;
+  let deliveryList = "",
+      deliveryFinish = "";
+
   app.toggleMainBlocks();
-  xhr.open("GET", this.adres+"crm.deal.list.json?ORDER[ID]=DESC&FILTER[UF_CRM_1624521910]="+id, true);
+  xhr.open("GET", this.adres+"crm.deal.list.json?ORDER[ID]=DESC&FILTER[ASSIGNED_BY_ID]="+id, true);
   xhr.onload = function()	{
     const responseObj = JSON.parse(xhr.response).result;
           noDelObj = [];
-    app.clearAll();
-    responseObj.forEach(function(obj) {
-      switch(obj.STAGE_ID) {
-        case "C1:PREPARATION":
-          app.addToDeliveryList(obj);
-          break;
-        case "C1:WON":
-        case "C1:FINAL_INVOICE":
-          app.addToDeliveryClose(obj);
-          break;
-        default:
-          noDelObj.push(obj);
+    if(xhr.status == 200)  {
+      app.clearAll();
+      responseObj.forEach(function(obj) {
+        switch(obj.STAGE_ID) {
+          case "C1:PREPARATION":
+            deliveryList+=app.addToDeliveryList(obj);
+            break;
+          case "C1:WON":
+          case "C1:FINAL_INVOICE":
+            deliveryFinish+=app.addToDeliveryClose(obj);
+            break;
+          default:
+            noDelObj.push(obj);
+        }
+      });
+
+      document.querySelector('#deliveryList tbody').append(deliveryList);
+      app.addListenerEndDelivery();
+      document.querySelector('#deliveryFinish tbody').append(deliveryFinish);
+
+      localStorage.setItem('deliveryList', deliveryList);
+      localStorage.setItem('deliveryFinish', deliveryFinish);
+    }else {
+      if(localStorage.getItem('deliveryList')) {
+        document.querySelector('#deliveryList tbody').append(localStorage.getItem('deliveryList'));
+        app.addListenerEndDelivery();
+        document.querySelector('#deliveryFinish tbody').append(localStorage.getItem('deliveryFinish'));
       }
-    });
-    app.addListenerEndDelivery();
+      return alert("Нет связи с интернетом");
+    }
   }
   xhr.send(null);
 }
@@ -106,7 +124,8 @@ Application.prototype.addToDeliveryList = function(obj) {
           '<tr class="raport hidden" name="'+obj.ID+'"><td class="left"></td>'+
           '<td><textarea value=""></textarea><br><button class="sell">Отправить</button><button class="cancel">Отмена</button></td>'+
           '<td class="right"></td></tr></table></td>';
-  document.querySelector('#deliveryList tbody').append(newItem);
+  
+  return newItem;
 }
 
 Application.prototype.addToDeliveryClose = function(obj) {
@@ -120,7 +139,8 @@ Application.prototype.addToDeliveryClose = function(obj) {
           'Доставка: '+obj.BEGINDATE.split("T")[0]+' '+info[3]+'<br>'+
           '<p>'+obj.COMMENTS+'</p></td></tr>'+
           '<tr class="raport" name="'+obj.ID+'"><td></td></tr></table></td>';
-  document.querySelector('#deliveryFinish tbody').append(newItem);
+
+  return newItem;
 }
 
 Application.prototype.onClickElMenu = function(elt) {
