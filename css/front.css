@@ -1,9 +1,32 @@
 body {
 	text-align: center;
+	/* background-image: url(../inner/640x1136.png); */
+	background-position: 0 center;
+	background-size: 100% auto;
+	background-attachment: fixed;
+}
+body.deliveryList {
 	background-image: url(../inner/640x1136.png);
-	background-position: center 0;
-	background-size: cover;
-	
+}
+body.deliveryMap {
+	background-image: url(../pic/map.svg);
+}
+body.deliveryFinish {
+	background-image: url(../pic/history.svg);
+}
+main {
+	background-color: rgba(255, 255, 255, 0.7);
+	padding: 70px 0 100px 0;
+	overflow: auto;
+}
+fieldset {
+	margin-bottom: 5px;
+}
+legend {
+	background-color:rgb(255, 192, 255);
+	font-weight: bold;
+	font-style: italic;
+	font-size: large;
 }
 table {
 	width: 100%;
@@ -12,25 +35,42 @@ table {
 th {
 	background-color: rgba(254, 240, 255, 0.993);
 }
+form input[type="radio"] {
+	width: 10%;
+}
 textarea	{
 	height: 60px;
 }
-
+input[name="payoncash"] {
+	width: 25%;
+}
+input[name="kopeek"] {
+	width: 30px;
+}
+div[name="zone"] {
+	position: relative;
+  display: inline-block;
+}
 .hidden {
 	display: none;
 }
-.cantry_code	{
+.country_code	{
 	margin-left: -20px;
-	font-size: 18px;
 }
 .endDelivery {
 	width: 48px;
 }
+.money {
+	font-style: italic;
+}
+.datetime {
+	size: 40px;
+	font-size: large;
+}
 
-#app	{
-	background-color: rgba(255, 255, 255, 0.7);
-	padding: 70px 0 100px 0;
-	overflow:auto;
+#metro_msk {
+	position: absolute;
+	z-index: 10;
 }
 #setting {
 	margin-top: 30%;
@@ -104,7 +144,7 @@ nav ul {
 nav ul li {
 	margin: 0px -7px 0 0;
 	padding-top: 10px;
-	display:inline-block;
+	display: inline-block;
 	width: 33%;
 	position: relative;
 	cursor: pointer;
@@ -116,16 +156,15 @@ nav a {
 	 color:#a8a8a8;
 	 font-size:20px;
 	 line-height: 60px;
-	 text-decoration:none;
+	 text-decoration: none;
 	 position: relative;
 }
 /* изменяем цвет фона при наведении курсора */
 nav a:hover {
-	 text-decoration:none;
+	 text-decoration: none;
 	 position: relative;
 }
 
 nav a img	{
 	width: 64px;
 }
-

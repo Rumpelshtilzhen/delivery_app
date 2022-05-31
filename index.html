@@ -14,44 +14,37 @@
       navigator.serviceWorker.register('serviceworker.js', {
         scope: './'
       }).then(function(reg) {
-        console.log('Service worker has been registered for scope:'+ reg.scope);
+        console.log('Service worker has been registered for scope: ' + reg.scope);
       });
     }
   </script>
-  <script src="js/application.js"></script>
+  <script src="js/shell.js?0.301"></script>
+  <script src="js/application.js?0.814"></script>
 </head>
 <body>
 
-  <div id="app">
-    <div id="setting">
-      <form action="#">
-        <span class="cantry_code">+7 </span>
-        <input type="tel" id="phone" pattern="[0-9]{10}" placeholder="9990003366"><br>
-        <input type="text" id="lastname" pattern="[а-я][А-Я]" placeholder="Фамилия"><br>
-        <input type="text" id="firstname" pattern="[а-я][А-Я]" placeholder="Имя"><br>
-        <button id="enter">Войти</button>
-        <button id="exit" class="hidden">Выйти</button>
+  <main>
+    <div id="setting" class="hidden">
+      <p class="titleform">Введите данные пользователя</p>
+      <form id="settingform">
+        <input type="hidden" name="formname" value="autorisation"><br>
+        <span class="country_code">+7 </span>
+        <input type="tel" name="phone" placeholder="(___) ___-____" value=""><br>
+        <input type="email" name="email" placeholder="E-mail"><br>
+        <!-- <input type="text" id="firstname" name="firstname" pattern="[а-я][А-Я]" placeholder="Имя"><br>-->
+        <button name="enter">Войти</button>
+        <button name="exit" class="hidden">Выйти</button>
       </form>
     </div>
 
     <div id="generalInf" class="hidden">
-      <div id="deliveryList" >
-        <table><tbody>
-          <tr></tr>
-        </tbody></table>
-      </div>
-
+      <div id="deliveryList"></div>
       <div id="deliveryMap" class="hidden">
         <p>Данный раздел находится в разработке</p>
       </div>
-
-      <div id="deliveryFinish" class="hidden">
-        <table><tbody>
-          <tr></tr>
-        </tbody></table>
-      </div>
+      <div id="deliveryFinish" class="hidden"></div>
     </div>
-  </div>
+  </main>
 
   <nav id="menu">
     <ul>
@@ -67,5 +60,10 @@
       <a href="#"><img src="pic/house.svg" alt=""></a>
     </div>
   </div>
+
+  <script>
+    shell.start();
+    app.start();
+  </script>
 </body>
 </html>
